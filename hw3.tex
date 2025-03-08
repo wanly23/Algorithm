@@ -1,0 +1,18 @@
+\documentclass[a4paper,9pt]{article}
+\usepackage{graphicx}
+\usepackage{ctex}             % 这个宏包支持中文环境
+\usepackage{amsmath,amssymb,amsfonts}
+\usepackage{algpseudocode}
+\usepackage{algorithm}
+\usepackage[a4paper, left=2cm, right=2cm, top=2cm, bottom=2cm]{geometry} % 设置页面边距
+% \setlength{\parindent}{2pt}
+\begin{document}
+\title{Homework Week 3}
+\author{软31 万璐瑶 2023012127}
+\maketitle
+因为offset的值是\verb|RANDOM(1,n)|，所以dest的值也相当于是在(1,n)中任取。
+又因为i是从1到n的循环遍历，且在$dest > n$时有$dest = dest - n$，所以dest可以以$\frac{1}{n}$的概率取1-n中所有的值
+因此每个元素A[i]出现在B中任意元素的概率都是$\frac{1}{n}$
+
+显然A[i+1]出现在B中元素的位置必然是A[i]出现在B中元素位置的后一位，因此不是均匀随机排列。
+\end{document}

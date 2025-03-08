@@ -128,10 +128,6 @@ int main() {
         return 0;
     }
 
-    // for(int i = 0; i < pairs.size(); i++) {
-    //     cout << pairs[i].x << " " << pairs[i].y << endl;
-    // }
-
     merge_sort_by_y(&pairs[0], 0, pairs.size());
 
     cout << "choose the type of algorithm you want to use: \n";
