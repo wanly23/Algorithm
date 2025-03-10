@@ -4,14 +4,24 @@
 \usepackage{amsmath,amssymb,amsfonts}
 \usepackage{algpseudocode}
 \usepackage{algorithm}
+\usepackage{float}
+\usepackage{minted} % 语法高亮和代码样式设置方面更加强大和灵活
+\usepackage{listings}  %引入listings包，用于在文档中插入代码，并可自定义代码样式
 \usepackage[a4paper, left=2cm, right=2cm, top=2cm, bottom=2cm]{geometry} % 设置页面边距
 % \setlength{\parindent}{2pt}
+
 \begin{document}
 \title{实验报告}
 \author{软31 万璐瑶 2023012127}
 \maketitle
 \section{实验要求}
-
+实现求平面上最近点对的复杂度为Θ(nlgn)的算法，要求：
+\begin{itemize}
+    \item 能够随机生成大量平面点（要求可达到一千万个点）；
+    \item 有方便测试的界面或者命令行，能够读入文本文件（含平面点位置信息）作为输入。
+    \item 分析比较在不同输入规模情况下Θ(n2)和Θ(nlgn)算法的实际运行时间，提交实验报告。
+\end{itemize}
+代码运行方式以及运行参数详见readme.txt文件。
 \section{实验环境}
 \begin{itemize}
     \item 操作系统：Windows 11
@@ -22,10 +32,63 @@
 
 \section{算法分析}
 
+在算法实现部分，我们实现了两种算法，分别是$O(n\lg n)$的分治算法和$O(n^2)$的暴力算法。分治算法的基本思想是将平面点集分为两部分，分别求解两部分的最近点对，然后再求解跨越两部分的最近点对，复杂度为$O(n\lg n)$。
 
+暴力算法的基本思想是枚举遍历所有点对，找出距离最小的点对，复杂度为$O(n^2)$。
 
+分治算法中先对输入的点对进行归并排序，保证y值升序排序，\verb|find_closest_pair2|中将点集分为两部分，分别求解两部分的最近点对，然后求解跨越两部分的最近点对。跨越两部分的最近点对的求解方法是：由于所有点已经按照y值升序排序，由课上所讲内容得知，在$\delta d$范围内，对每个点最多只需计算与其后面的7个点的距离，便可这个点与所有点的找出最小的距离，因此合并操作的复杂度为$O(n)$。
 
+又主定理可知，分治算法的时间复杂度为$O(n\lg n)$。
+
+\begin{listing}[H]
+	\caption{找最近点对}
+	\label{code:2}
+	\begin{minted}{cpp} 
+int find_closest_pair2(vector<pairr> pairs) { // 优化后的算法
+    if (pairs.size() == 2) {
+        return distance(pairs[0], pairs[1]); // 两个点直接求距离
+    } else if (pairs.size() == 1) {
+        return INT_MAX; // 一个点无法求最近点对距离，设为最大值
+    }
+    int mid = pairs.size() / 2;
+    vector<pairr> left_pairs, right_pairs;
+    for(int i = 0; i < mid; i++) {
+        left_pairs.push_back(pairs[i]);
+    }
+    for(int i = mid; i < pairs.size(); i++) {
+        right_pairs.push_back(pairs[i]);
+    }
+    int d1 = find_closest_pair2(left_pairs);
+    int d2 = find_closest_pair2(right_pairs); // 分别递归求左右两边的最近点对
+    // 合并两侧求最近点对
+    int d = min(d1, d2);
+    int minn = d;
+    for(int i = 0; i < pairs.size(); i++) {
+        for (int j = 1; j < 8; j++) {
+            if (i + j < pairs.size()) {
+                if ((pairs[i].x - pairs[i + j].x) * (pairs[i].x - pairs[i + j].x) < d) {
+                    int dis = distance(pairs[i], pairs[i + j]);
+                    if (dis < minn) {
+                        minn = dis;
+                    }
+                }
+            }
+        }
+    }
+    return minn;
+}
+\end{minted}
+\end{listing}
+
+    
 \section{实验设计}
+可见分治算法的复杂度为$O(n\lg n)$，暴力算法的复杂度为$O(n^2)$，因此我们设计了两种算法，分别求解最近点对，然后比较两种算法的运行时间。再调用<chrono>库中的函数，计算两种算法的运行时间，此时`duration`的单位为纳秒，目的是更好地精确比较在数据规模较小的时候两种算法的时间差。
+
+同时通过读取输入数的方式，设计了两种读取数据的方法，用户可通过文件输入，自带的三个.txt文件分别为100个点，500个点和1000个点，用户也可自行输入文件，文件格式为每行一个点，x和y坐标用空格隔开，且首行表示该文件内的点数。
+同时，我们设计了一个随机生成平面点的函数\verb|random()|，用户也可以通过输入2选择随机生成数据，生成随机数调用的函数是\verb|rand()|,在C语言中，\verb|rand()| 函数生成的随机数范围是从 \verb|0| 到 \verb|RAND_MAX|。\verb|RAND_MAX| 是一个定义在 \verb|<stdlib.h>| 中的宏，表示 \verb|rand()| 能生成的最大值。
+通常情况下，\verb|RAND_MAX| 的值为 \verb|32767|，故生成的点的x和y坐标均为0到32767之间的随机数，生成的点的数量可由用户输入。经测试，改函数生成的点的数量可达到一千万个点。
+
+生成数据后通过命令行读取用户命令调用两种算法，便于测试时间。
 
 \section{结果分析}
 \begin{table}[!htp]
@@ -35,16 +98,23 @@
         \hline
         n  & $O(n\lg n)$算法 & $O(n^2)$算法\\
         \hline
-        10 & 0 & 0 \\
+        100 & 0 & 0 \\
         \hline
-        20 & 0 & 0 \\
+        500 & 1556800 & 2683900 \\
         \hline
-        30 & 3087.800 & 0 \\
+        1000 & 6508600 & 10882200 \\
         \hline
-        40 & 385990 & 0 \\
+        5000 & 12133300 & 258947300 \\
         \hline
-        45 & 4653900.100 & 0 \\
+        10000 & 29822400 & 1033896700 \\
+        \hline
+        50000 & 161094400  & 22109884700 \\
+        \hline
+        100000 & 335465000 & / \\
         \hline
     \end{tabular}
 \end{table}
+可见复杂度为$O(n\lg n)$的算法基本随$n$的增长呈线性变化，而复杂度为$O(n^2)$的算法随$n$的增长呈指数级变化。当$n>50000$时，$O(n^2)$算法的运行时间长于一分钟，是低效的算法。
+
+在数据较小时($n<100$)，两种算法的运行时间差异不大，但随着数据量的增大，$O(n\lg n)$算法的优势逐渐显现，因此在大数据量下，$O(n\lg n)$算法是更优的选择。
 \end{document}

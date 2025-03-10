@@ -21,7 +21,7 @@ int distance(pairr p1, pairr p2) { // 求两个点之间的距离
 
 void random(int n) { // 随机生成n个点
     for(int i = 0; i < n; i++) {
-        pairs.push_back(pairr(rand(), rand()));
+        pairs.push_back(pairr(rand(), rand())); 
     }
 }
 
@@ -71,9 +71,9 @@ int find_closest_pair1(vector<pairr> pairs) { //求最近的两个点 暴力算�
 
 int find_closest_pair2(vector<pairr> pairs) { // 优化后的算法
     if (pairs.size() == 2) {
-        return distance(pairs[0], pairs[1]);
+        return distance(pairs[0], pairs[1]); // 两个点直接求距离
     } else if (pairs.size() == 1) {
-        return INT_MAX;
+        return INT_MAX; // 一个点无法求最近点对距离，设为最大值
     }
     int mid = pairs.size() / 2;
     vector<pairr> left_pairs, right_pairs;
@@ -84,7 +84,8 @@ int find_closest_pair2(vector<pairr> pairs) { // 优化后的算法
         right_pairs.push_back(pairs[i]);
     }
     int d1 = find_closest_pair2(left_pairs);
-    int d2 = find_closest_pair2(right_pairs);
+    int d2 = find_closest_pair2(right_pairs); // 分别递归求左右两边的最近点对
+    // 合并两侧求最近点对
     int d = min(d1, d2);
     int minn = d;
     for(int i = 0; i < pairs.size(); i++) {
@@ -127,6 +128,10 @@ int main() {
         cout << "illegal input\n";
         return 0;
     }
+
+    // for(int i = 0; i < pairs.size(); i++) {
+    //     cout << pairs[i].x << " " << pairs[i].y << endl;
+    // }
 
     merge_sort_by_y(&pairs[0], 0, pairs.size());
 
